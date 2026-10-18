@@ -5,10 +5,10 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 /**
  * PayPal webhook receiver.
- * Events handled:
- *   INVOICE.PAID / INVOICE.MARKED_AS_PAID → mark paid, log, stop reminders
- *   INVOICE.CANCELLED / INVOICE.REFUNDED  → update status
- *   INVOICE.PAYMENT_REMINDER             → track reminder activity
+ * Events handled (legacy + 2023-12 namespaced names):
+ *   INVOICE.PAID / INVOICING.INVOICE.PAID / MARKED_AS_PAID → mark paid, log, stop reminders
+ *   INVOICE.CANCELLED / INVOICING.INVOICE.CANCELLED / REFUNDED → update status
+ *   INVOICING.INVOICE.SENT / AUTOMATIC-REMINDER-SENT → track reminder activity
  * Verification via PayPal webhook ID + transmission headers (when configured).
  */
 export async function POST(req: NextRequest) {
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   await db.logEvent("WEBHOOK.RECEIVED", invoiceId, type);
 
-  if (invoiceId && type.startsWith("INVOICE.")) {
+  if (invoiceId && (type.startsWith("INVOICE.") || type.startsWith("INVOICING."))) {
     try {
       const remote = await paypal.getInvoice(invoiceId);
       const local = await db.getInvoiceById(invoiceId);
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         created_via: local?.created_via || "seed",
         created_at: local?.created_at || new Date().toISOString(),
       });
-      if (type === "INVOICE.PAID" || type === "INVOICE.MARKED_AS_PAID") {
+      if (/INVOICE\.(PAID|MARKED_AS_PAID)$/.test(type)) {
         await db.logEvent("INVOICE.PAID", invoiceId, `Payment received — ${remote.invoice_number}`);
       }
     } catch (e) {
