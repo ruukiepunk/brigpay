@@ -43,8 +43,12 @@ interface DBShape {
   sweep_runs: number;
 }
 
-const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
+const IS_VERCEL = process.env.VERCEL === "1" || process.env.VERCEL === "true";
+// Vercel serverless: filesystem root read-only (EROFS) → cache hidup di /tmp (writable per instance).
+// Seed dibaca dari data/db.json bawaan deployment (readable) tiap cold start.
+const DATA_DIR = process.env.DATA_DIR || (IS_VERCEL ? "/tmp/brigpay-data" : path.join(process.cwd(), "data"));
 const DB_PATH = path.join(DATA_DIR, "db.json");
+const SEED_PATH = path.join(process.cwd(), "data", "db.json");
 
 const EMPTY: DBShape = { invoices: [], events: [], chat: [], sweep_runs: 0 };
 
@@ -53,7 +57,13 @@ async function load(): Promise<DBShape> {
     const raw = await fs.readFile(DB_PATH, "utf-8");
     return { ...EMPTY, ...JSON.parse(raw) } as DBShape;
   } catch {
-    return structuredClone(EMPTY);
+    // cold start di /tmp → hydrate dari seed bawaan (best effort)
+    try {
+      const raw = await fs.readFile(SEED_PATH, "utf-8");
+      return { ...EMPTY, ...JSON.parse(raw) } as DBShape;
+    } catch {
+      return structuredClone(EMPTY);
+    }
   }
 }
 

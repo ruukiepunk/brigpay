@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px; height: 720px; overflow: hidden;
+    background: radial-gradient(1200px 700px at 70% 20%, #12203a 0%, #0a0f1c 55%, #06090f 100%);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: #e8eefc;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+  }
+  .badge {
+    font-size: 15px; letter-spacing: 3px; text-transform: uppercase;
+    color: #7aa2ff; border: 1px solid #2a3b63; border-radius: 999px;
+    padding: 8px 22px; margin-bottom: 34px; background: rgba(20,32,58,.55);
+  }
+  h1 {
+    font-size: 110px; font-weight: 800; letter-spacing: -2px;
+    background: linear-gradient(90deg, #00d47e 0%, #37e2a2 45%, #7aa2ff 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tag { font-size: 30px; color: #b9c6e6; margin-top: 18px; font-weight: 300; }
+  .stack {
+    margin-top: 46px; display: flex; gap: 14px; font-size: 17px; color: #8fa3cc;
+  }
+  .stack span {
+    border: 1px solid #24365c; background: rgba(16,26,48,.7);
+    padding: 9px 18px; border-radius: 10px;
+  }
+  .who {
+    position: absolute; bottom: 34px; font-size: 15px; color: #55688f; letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+  <div class="badge">PayPal AI Hackathon 2026</div>
+  <h1>BrigPay</h1>
+  <div class="tag">Your AI agent that gets you paid &mdash; automatically.</div>
+  <div class="stack">
+    <span>PayPal Invoicing API</span>
+    <span>Gemini AI</span>
+    <span>AG Grid</span>
+    <span>MIT Open Source</span>
+  </div>
+  <div class="who">by ruukiepunk</div>
+</body>
+</html>
