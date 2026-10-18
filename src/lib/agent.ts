@@ -196,6 +196,104 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
   }
 }
 
+// ---------------------------------------------------------------------------
+// Groq fallback (OpenAI-compatible) — used when Gemini free tier is rate-limited
+// ---------------------------------------------------------------------------
+
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+
+const GEMINI_TO_JSON_TYPE: Record<string, string> = {
+  STRING: "string",
+  NUMBER: "number",
+  BOOLEAN: "boolean",
+  ARRAY: "array",
+  OBJECT: "object",
+};
+
+function geminiSchemaToJSON(s: Schema): Record<string, unknown> {
+  const out: Record<string, unknown> = { type: GEMINI_TO_JSON_TYPE[String(s.type)] || "string" };
+  if (s.description) out.description = s.description;
+  if (s.properties) {
+    out.properties = Object.fromEntries(
+      Object.entries(s.properties).map(([k, v]) => [k, geminiSchemaToJSON(v as Schema)])
+    );
+  }
+  if (s.items) out.items = geminiSchemaToJSON(s.items);
+  if (s.required) out.required = s.required;
+  return out;
+}
+
+function toOpenAITools() {
+  return TOOLS.map((t) => ({
+    type: "function",
+    function: {
+      name: t.name,
+      description: t.description,
+      parameters: geminiSchemaToJSON(t.parameters as Schema),
+    },
+  }));
+}
+
+function isQuotaError(e: unknown): boolean {
+  const m = String(e instanceof Error ? e.message : e);
+  return m.includes("429") || m.includes("RESOURCE_EXHAUSTED") || m.includes("quota");
+}
+
+async function runGroqAgent(
+  userMessage: string,
+  history: Array<{ role: "user" | "model"; text: string }>
+): Promise<string> {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY is not configured");
+
+  type ChatMsg = Record<string, unknown>;
+  const messages: ChatMsg[] = [
+    { role: "system", content: SYSTEM_INSTRUCTION },
+    ...history.slice(-10).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })),
+    { role: "user", content: userMessage },
+  ];
+
+  let reply = "";
+  for (let step = 0; step < 5; step++) {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: GROQ_MODEL, messages, tools: toOpenAITools(), tool_choice: "auto" }),
+    });
+    if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 200)}`);
+
+    const data = (await res.json()) as {
+      choices?: Array<{ message?: { content?: string | null; tool_calls?: Array<{ id: string; function: { name: string; arguments: string } }> } }>;
+    };
+    const msg = data.choices?.[0]?.message;
+    const toolCalls = msg?.tool_calls || [];
+
+    if (toolCalls.length === 0) {
+      reply = (msg?.content || "").trim();
+      break;
+    }
+
+    messages.push({ role: "assistant", content: msg?.content ?? null, tool_calls: toolCalls });
+    for (const tc of toolCalls) {
+      let args: Record<string, unknown> = {};
+      try {
+        args = JSON.parse(tc.function.arguments || "{}");
+      } catch {
+        /* keep empty args */
+      }
+      let result: string;
+      try {
+        result = await executeTool(tc.function.name, args);
+      } catch (e) {
+        result = JSON.stringify({ error: String(e).slice(0, 300) });
+      }
+      messages.push({ role: "tool", tool_call_id: tc.id, content: result });
+    }
+  }
+
+  return reply || "I could not produce a response. Please try again.";
+}
+
 const SYSTEM_INSTRUCTION = `You are BrigPay, a sharp, friendly AI collections agent for small businesses.
 You operate real PayPal Invoicing APIs through your tools.
 
@@ -213,9 +311,21 @@ export async function runAgent(
   history: Array<{ role: "user" | "model"; text: string }> = []
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return "GEMINI_API_KEY is not configured on the server.";
+  try {
+    if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
+    return await runGeminiAgent(userMessage, history);
+  } catch (e) {
+    if (!isQuotaError(e)) throw e;
+    console.warn("Gemini rate-limited — falling back to Groq");
+    return await runGroqAgent(userMessage, history);
+  }
+}
 
-  const ai = new GoogleGenAI({ apiKey });
+async function runGeminiAgent(
+  userMessage: string,
+  history: Array<{ role: "user" | "model"; text: string }>
+): Promise<string> {
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
   const contents = [
     ...history.slice(-10).map((m) => ({
