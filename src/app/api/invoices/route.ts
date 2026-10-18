@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import * as paypal from "@/lib/paypal";
 import * as db from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/invoices → always merge latest from PayPal (source of truth) into the
  * local cache, then return invoices + recent events.
