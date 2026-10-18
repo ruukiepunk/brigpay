@@ -77,15 +77,19 @@ async function main() {
     await typeNatural(
       page,
       "input[placeholder*='Invoice Jane']",
-      "Invoice Cyberdyne Systems, ap@cyberdyne.test, 1750 USD for robotics consulting, due in 15 days. Send it now."
+      "Invoice Tyrell Corporation, rtyrell@tyrell.test, 2400 USD for replicate planning, due in 15 days. Send it now."
     );
     await page.keyboard.press("Enter");
-    // tunggu balasan agent (invoice number muncul)
-    await page.waitForFunction(() => document.body.innerText.includes("BRG-"), { timeout: 60000 });
+    // tunggu agent benar-benar selesai membalas (POST /api/chat selesai)
+    await page.waitForResponse(
+      (r) => r.url().includes("/api/chat") && r.request().method() === "POST",
+      { timeout: 90000 }
+    );
+    await page.waitForFunction(() => document.body.innerText.includes("BRG-"), { timeout: 30000 });
     await sleep(2500);
     // pindah ke dashboard, row baru kelihatan
     await page.goto(`${APP}/dashboard`, { waitUntil: "networkidle" });
-    await page.waitForFunction(() => document.body.innerText.includes("Cyberdyne"), { timeout: 30000 });
+    await page.waitForFunction(() => document.body.innerText.includes("Tyrell"), { timeout: 30000 });
     await sleep(3000);
     await ctx.close(); // video tersimpan
     console.log("scene A (chat→invoice) done");
@@ -99,7 +103,10 @@ async function main() {
     await sleep(1000);
     await typeNatural(page, "input[placeholder*='Invoice Jane']", "Who hasn't paid me?");
     await page.keyboard.press("Enter");
-    await page.waitForFunction(() => /outstanding|overdue|owed/i.test(document.body.innerText), { timeout: 60000 });
+    await page.waitForResponse(
+      (r) => r.url().includes("/api/chat") && r.request().method() === "POST",
+      { timeout: 90000 }
+    );
     await sleep(4000);
     await ctx.close();
     console.log("scene B (who hasn't paid) done");
@@ -114,22 +121,19 @@ async function main() {
     await sleep(1500);
     const chase = page.locator("button", { hasText: /chase/i }).first();
     await chase.click();
-    // tunggu sweep selesai → activity feed kirim event
-    await page.waitForFunction(() => /REMINDER|reminder/i.test(document.body.innerText), { timeout: 120000 });
+    // tunggu sweep selesai → muncul "Sweep #N: X/Y reminders sent"
+    await page.waitForFunction(() => /Sweep #\d+/.test(document.body.innerText), { timeout: 120000 });
     await sleep(3000);
     await ctx.close();
     console.log("scene C (chase sweep) done");
   }
 
   // ---------- SCENE D: buyer bayar → PAID (butuh kredensial buyer sandbox) ----------
-  if (process.env.BUYER_EMAIL && process.env.BUYAL_PASSWORD) {
-    console.log("BUYAL_PASSWORD typo guard: skip"); // guard typo, pakai BUYER_PASSWORD
-  }
   if (process.env.BUYER_EMAIL && process.env.BUYER_PASSWORD) {
     // invoice terbaru dari app
     const invRes = await get(`${APP}/api/invoices`);
     const list = JSON.parse(invRes.body).invoices || [];
-    const target = list.find((i) => i.customer_name.includes("Cyberdyne")) || list[0];
+    const target = list.find((i) => i.customer_name.includes("Tyrell")) || list.find((i) => i.customer_name.includes("Cyberdyne")) || list[0];
     const token = await paypalToken(env);
     const invRaw = await get(`${env.PAYPAL_API_BASE}/v2/invoicing/invoices/${target.id}`, {
       Authorization: `Bearer ${token}`,
@@ -163,10 +167,14 @@ async function main() {
     const ctx2 = await browser.newContext({ viewport: VIEW, recordVideo: { dir: OUT, size: VIEW } });
     const page2 = await ctx2.newPage();
     await page2.goto(`${APP}/dashboard`, { waitUntil: "networkidle" });
-    await page2.waitForFunction(() => document.body.innerText.includes("Cyberdyne"), { timeout: 30000 });
+    await page2.waitForFunction(() => document.body.innerText.includes("Tyrell"), { timeout: 30000 });
     await sleep(1000);
     await page2.reload({ waitUntil: "networkidle" });
-    await page2.waitForFunction(() => /PAID/i.test(document.body.innerText), { timeout: 30000 });
+    await page2.waitForFunction(() => {
+      return Array.from(document.querySelectorAll('[role="row"], tr')).some(
+        (el) => el.textContent?.includes("Tyrell") && /PAID/.test(el.textContent || "")
+      );
+    }, { timeout: 30000 });
     await sleep(4000);
     await ctx2.close();
     console.log("scene E (PAID appears) done");
