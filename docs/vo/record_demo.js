@@ -65,11 +65,13 @@ async function typeNatural(page, selector, text) {
 
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
+  const only = process.argv.slice(2); // e.g. "node record_demo.js D E"
+  const want = (s) => only.length === 0 || only.includes(s);
   const browser = await chromium.launch({ headless: true });
   const env = envLocal();
 
-  // ---------- SCENE A: chat → invoice Cyberdyne $1.750 ----------
-  {
+  // ---------- SCENE A: chat → invoice Tyrell $2.400 ----------
+  if (want("A")) {
     const ctx = await browser.newContext({ viewport: VIEW, recordVideo: { dir: OUT, size: VIEW } });
     const page = await ctx.newPage();
     await page.goto(`${APP}/chat`, { waitUntil: "networkidle" });
@@ -96,7 +98,7 @@ async function main() {
   }
 
   // ---------- SCENE B: "Who hasn't paid me?" ----------
-  {
+  if (want("B")) {
     const ctx = await browser.newContext({ viewport: VIEW, recordVideo: { dir: OUT, size: VIEW } });
     const page = await ctx.newPage();
     await page.goto(`${APP}/chat`, { waitUntil: "networkidle" });
@@ -113,7 +115,7 @@ async function main() {
   }
 
   // ---------- SCENE C: sweep / chase overdue ----------
-  {
+  if (want("C")) {
     const ctx = await browser.newContext({ viewport: VIEW, recordVideo: { dir: OUT, size: VIEW } });
     const page = await ctx.newPage();
     await page.goto(`${APP}/dashboard`, { waitUntil: "networkidle" });
@@ -129,7 +131,7 @@ async function main() {
   }
 
   // ---------- SCENE D: buyer bayar → PAID (butuh kredensial buyer sandbox) ----------
-  if (process.env.BUYER_EMAIL && process.env.BUYER_PASSWORD) {
+  if (want("D") && process.env.BUYER_EMAIL && process.env.BUYER_PASSWORD) {
     // invoice terbaru dari app
     const invRes = await get(`${APP}/api/invoices`);
     const list = JSON.parse(invRes.body).invoices || [];

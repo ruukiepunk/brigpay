@@ -1,5 +1,7 @@
 # BrigPay — Your AI Invoice Collector
 
+**🟢 Live demo: [brigpay.vercel.app](https://brigpay.vercel.app)** · [Dashboard](https://brigpay.vercel.app/dashboard) · [AI Agent chat](https://brigpay.vercel.app/chat)
+
 **Chat with an AI agent. It sends real PayPal invoices and chases late payers for you.**
 
 Small businesses lose an average of 20 days a year chasing unpaid invoices. BrigPay turns the most annoying part of running a business into a conversation: tell the agent who to bill, and it creates & sends a real PayPal invoice in seconds — then keeps chasing automatically until the money lands.
@@ -66,10 +68,10 @@ Webhook receiver: `POST /api/webhooks/paypal` handles `INVOICE.PAID`, `INVOICE.C
 ## Tech stack
 
 - **Next.js 16** (App Router, TypeScript) + **Tailwind CSS v4**
-- **Gemini** (`gemini-3.8-flash`) function calling — the agent brain
+- **Gemini** (`gemini-3.8-flash`) function calling — the agent brain, with automatic **Groq** (`gpt-oss-120b`) fallback so the agent stays up even when one LLM provider rate-limits
 - **PayPal Invoicing API v2** (sandbox) + **Webhooks** + OAuth2 client-credentials
 - **AG Grid 36** (community) — invoice command center
-- JSON file cache (PayPal remains the source of truth) · Deployed on **Render**
+- JSON file cache (PayPal remains the source of truth) · Deployed on **Vercel** (free Hobby)
 
 ## API endpoints
 
@@ -98,6 +100,7 @@ PAYPAL_ENV=sandbox
 PAYPAL_API_BASE=https://api-m.sandbox.paypal.com
 GEMINI_API_KEY=...          # aistudio.google.com
 GEMINI_MODEL=gemini-3.8-flash
+GROQ_API_KEY=...            # optional — console.groq.com, automatic fallback when Gemini is rate-limited
 ```
 
 ```bash
