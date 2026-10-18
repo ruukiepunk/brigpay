@@ -1,0 +1,231 @@
+{
+  "invoices": [
+    {
+      "id": "INV2-96XJ-JZPY-VNFG-R9Y4",
+      "invoice_number": "BRG-8684383",
+      "customer_name": "ACME Corp",
+      "customer_email": "billing@acmecorp.test",
+      "amount": "2500.00",
+      "currency": "USD",
+      "status": "SENT",
+      "invoice_date": "2026-10-18",
+      "due_date": "2026-11-01",
+      "reminder_count": 1,
+      "last_reminder_at": "2026-10-18T07:39:41.146Z",
+      "created_via": "chat",
+      "created_at": "2026-10-18T07:31:26.913Z"
+    },
+    {
+      "id": "INV2-BUBD-EQS2-35EQ-W6LJ",
+      "invoice_number": "BRG-9070159",
+      "customer_name": "Globex Shipping",
+      "customer_email": "accounts@globex.test",
+      "amount": "480.00",
+      "currency": "USD",
+      "status": "SENT",
+      "invoice_date": "2026-10-18",
+      "due_date": "2026-11-02",
+      "reminder_count": 1,
+      "last_reminder_at": "2026-10-18T07:40:23.929Z",
+      "created_via": "chat",
+      "created_at": "2026-10-18T07:37:53.864Z"
+    }
+  ],
+  "events": [
+    {
+      "id": "723b09c3-36eb-4c45-a277-460a92698b23",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:50:14.931Z"
+    },
+    {
+      "id": "2bbdd517-0a24-4379-b515-bcf207e2de53",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:50:13.828Z"
+    },
+    {
+      "id": "d657d4be-cfc4-4863-99c0-13ebebdb6a8b",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:49:34.537Z"
+    },
+    {
+      "id": "d19310e2-fff9-4aa8-b515-69c4e2c0afaf",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:49:33.694Z"
+    },
+    {
+      "id": "9e13627b-5923-4281-a870-519ab05d6ce2",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:49:03.067Z"
+    },
+    {
+      "id": "6c1d04f4-b611-4e88-bd3b-13d76933d17e",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:49:02.677Z"
+    },
+    {
+      "id": "7d809b69-bf95-4ebb-90e6-ad2208c0958e",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:49:02.259Z"
+    },
+    {
+      "id": "9d9af26f-4f70-4332-9362-524e2e85a7cd",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:40:57.566Z"
+    },
+    {
+      "id": "a0991580-7196-457c-9d85-457033d36482",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:40:57.123Z"
+    },
+    {
+      "id": "23242bc4-3840-472d-8666-9e5fe76ccc41",
+      "type": "SWEEP.RUN",
+      "invoice_id": null,
+      "message": "Sweep #1: 1/1 reminders sent",
+      "at": "2026-10-18T07:40:23.979Z"
+    },
+    {
+      "id": "009a0790-6d03-4441-b907-f26ce856f970",
+      "type": "REMINDER.SENT",
+      "invoice_id": "INV2-BUBD-EQS2-35EQ-W6LJ",
+      "message": "Sweep: reminder to Globex Shipping (BRG-9070159)",
+      "at": "2026-10-18T07:40:23.946Z"
+    },
+    {
+      "id": "759df1c5-1b8f-4894-8dc5-f6591e3b7eeb",
+      "type": "REMINDER.SENT",
+      "invoice_id": "INV2-96XJ-JZPY-VNFG-R9Y4",
+      "message": "Payment reminder sent via PayPal",
+      "at": "2026-10-18T07:39:41.162Z"
+    },
+    {
+      "id": "7f2aabf1-943f-4e17-8f2b-3e14d05469d9",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 2 invoices from PayPal",
+      "at": "2026-10-18T07:37:56.616Z"
+    },
+    {
+      "id": "85ad953d-5994-486a-928f-d8c300bd62ab",
+      "type": "INVOICE.SENT",
+      "invoice_id": "INV2-BUBD-EQS2-35EQ-W6LJ",
+      "message": "Invoice BRG-9070159 (USD 480.00) sent to accounts@globex.test",
+      "at": "2026-10-18T07:37:53.882Z"
+    },
+    {
+      "id": "d2a01c6d-3449-4536-a3a5-fd9b885bde02",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 0 invoices from PayPal",
+      "at": "2026-10-18T07:31:29.913Z"
+    },
+    {
+      "id": "d35605f3-1710-4700-9e00-331b46f1f0b8",
+      "type": "INVOICE.SENT",
+      "invoice_id": "INV2-96XJ-JZPY-VNFG-R9Y4",
+      "message": "Invoice BRG-8684383 (USD 2500.00) sent to billing@acmecorp.test",
+      "at": "2026-10-18T07:31:26.931Z"
+    }
+  ],
+  "chat": [
+    {
+      "role": "user",
+      "text": "Invoice ACME Corp, email billing@acmecorp.test, ,500 for website redesign, due in 14 days",
+      "at": "2026-10-18T07:24:32.538Z"
+    },
+    {
+      "role": "model",
+      "text": "Could you clarify the total amount for the invoice? It looks like there's a typo in \",500\"—did you mean $500.00, $1,500.00, or another amount?",
+      "at": "2026-10-18T07:24:44.757Z"
+    },
+    {
+      "role": "user",
+      "text": "Yes it is 2500 USD exactly. Please create and send it now.",
+      "at": "2026-10-18T07:24:58.309Z"
+    },
+    {
+      "role": "model",
+      "text": "The invoice creation failed due to a PayPal API schema validation error (400). Please check that billing@acmecorp.test is a valid email domain or let me know if you'd like to try again with a different email address.",
+      "at": "2026-10-18T07:25:08.879Z"
+    },
+    {
+      "role": "user",
+      "text": "Please create that invoice now: ACME Corp, billing@acmecorp.test, 2500 USD for website redesign, due in 14 days",
+      "at": "2026-10-18T07:26:45.770Z"
+    },
+    {
+      "role": "model",
+      "text": "The PayPal invoice creation failed with a schema validation error (400), likely because PayPal rejects the `.test` top-level domain. Please provide a standard email address (such as `@acmecorp.com`) so I can send the $2,500.00 invoice.",
+      "at": "2026-10-18T07:26:54.630Z"
+    },
+    {
+      "role": "user",
+      "text": "Go ahead and create the invoice now: ACME Corp, billing@acmecorp.test, 2500 USD, website redesign, due in 14 days",
+      "at": "2026-10-18T07:29:48.585Z"
+    },
+    {
+      "role": "model",
+      "text": "The invoice creation failed because the PayPal API returned a 404 error (resource not found). Please verify your PayPal sandbox credentials or try again in a few moments.",
+      "at": "2026-10-18T07:29:59.797Z"
+    },
+    {
+      "role": "user",
+      "text": "Create and send the invoice now please: ACME Corp, billing@acmecorp.test, 2500 USD, website redesign, due in 14 days",
+      "at": "2026-10-18T07:31:20.011Z"
+    },
+    {
+      "role": "model",
+      "text": "I've created and sent the invoice (#BRG-8684383) for $2,500.00 to ACME Corp at billing@acmecorp.test. Payment is due in 14 days.",
+      "at": "2026-10-18T07:31:29.127Z"
+    },
+    {
+      "role": "user",
+      "text": "Invoice Globex Shipping, accounts@globex.test, 480 USD for freight consulting, due in 15 days. Send it now.",
+      "at": "2026-10-18T07:37:43.332Z"
+    },
+    {
+      "role": "model",
+      "text": "I've created and sent invoice #BRG-9070159 for $480.00 to Globex Shipping at accounts@globex.test. Payment is due in 15 days.",
+      "at": "2026-10-18T07:37:55.899Z"
+    },
+    {
+      "role": "user",
+      "text": "Who hasn't paid me?",
+      "at": "2026-10-18T07:38:33.184Z"
+    },
+    {
+      "role": "model",
+      "text": "You currently have two unpaid invoices totaling $2,980.00. ACME Corp owes $2,500.00 (invoice #BRG-8684383), and Globex Shipping owes $480.00 (invoice #BRG-9070159).",
+      "at": "2026-10-18T07:38:41.198Z"
+    },
+    {
+      "role": "user",
+      "text": "Chase ACME Corp about invoice BRG-8684383 now.",
+      "at": "2026-10-18T07:39:31.841Z"
+    },
+    {
+      "role": "model",
+      "text": "I've sent a payment reminder to ACME Corp for invoice #BRG-8684383 ($2,500.00).",
+      "at": "2026-10-18T07:39:44.008Z"
+    }
+  ],
+  "sweep_runs": 1
+}
