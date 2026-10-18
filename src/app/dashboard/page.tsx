@@ -28,6 +28,7 @@ interface Invoice {
   due_date: string;
   reminder_count: number;
   last_reminder_at: string | null;
+  created_at?: string;
   is_overdue?: boolean;
   days_overdue?: number;
 }
@@ -357,7 +358,6 @@ export default function DashboardPage() {
               onGridReady={(p) => setGridApi(p.api)}
               loading={loading}
               animateRows
-              rowSelection={false}
             />
           </div>
         </div>

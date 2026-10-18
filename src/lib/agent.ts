@@ -2,14 +2,14 @@
  * BrigPay — AI Agent (Gemini function calling)
  * Turns plain-English messages into PayPal Invoicing actions.
  */
-import { GoogleGenAI, type FunctionDeclaration, type Schema } from "@google/genai";
+import { GoogleGenAI, Type, type FunctionDeclaration, type Schema } from "@google/genai";
 import * as paypal from "./paypal";
 import * as db from "./db";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
-const STR: Schema = { type: "string" };
-const NUM: Schema = { type: "number" };
+const STR: Schema = { type: Type.STRING };
+const NUM: Schema = { type: Type.NUMBER };
 
 const TOOLS: FunctionDeclaration[] = [
   {
@@ -17,27 +17,27 @@ const TOOLS: FunctionDeclaration[] = [
     description:
       "Create a PayPal invoice and immediately send it to the customer by email. Use when the user asks to invoice, bill, or charge a customer.",
     parameters: {
-      type: "object",
+      type: Type.OBJECT,
       properties: {
-        customer_name: { type: "string", description: "Customer or company name" },
-        customer_email: { type: "string", description: "Customer email address" },
+        customer_name: { type: Type.STRING, description: "Customer or company name" },
+        customer_email: { type: Type.STRING, description: "Customer email address" },
         items: {
-          type: "array",
+          type: Type.ARRAY,
           description: "Line items being billed",
           items: {
-            type: "object",
+            type: Type.OBJECT,
             properties: {
-              name: { type: "string", description: "Item name, e.g. 'Website redesign'" },
-              description: { type: "string", description: "Optional details" },
-              quantity: { type: "string", description: "Quantity as string, e.g. '1'" },
-              unit_amount: { type: "string", description: "Unit price, e.g. '2500.00' (numbers only)" },
+              name: { type: Type.STRING, description: "Item name, e.g. 'Website redesign'" },
+              description: { type: Type.STRING, description: "Optional details" },
+              quantity: { type: Type.STRING, description: "Quantity as string, e.g. '1'" },
+              unit_amount: { type: Type.STRING, description: "Unit price, e.g. '2500.00' (numbers only)" },
             },
             required: ["name", "quantity", "unit_amount"],
           },
         },
-        due_days: { type: "number", description: "Days until payment is due (default 14)" },
-        currency_code: { type: "string", description: "ISO currency, default USD" },
-        note: { type: "string", description: "Optional note shown on the invoice" },
+        due_days: { type: Type.NUMBER, description: "Days until payment is due (default 14)" },
+        currency_code: { type: Type.STRING, description: "ISO currency, default USD" },
+        note: { type: Type.STRING, description: "Optional note shown on the invoice" },
       },
       required: ["customer_name", "customer_email", "items"],
     },
@@ -47,7 +47,7 @@ const TOOLS: FunctionDeclaration[] = [
     description:
       "List invoices from PayPal with optional status filter. Statuses: DRAFT, SENT, PAYMENT_PENDING, PAID, MARKED_AS_PAID, CANCELLED, REFUNDED, PARTIALLY_PAID. Use for questions like 'who hasn't paid', 'show invoices', 'any overdue'.",
     parameters: {
-      type: "object",
+      type: Type.OBJECT,
       properties: {
         status_filter: { ...STR, description: "Optional status to filter by, e.g. SENT or PAID" },
       },
@@ -58,9 +58,9 @@ const TOOLS: FunctionDeclaration[] = [
     description:
       "Send a PayPal payment reminder for an existing SENT invoice. Use when the user asks to chase, nudge, or remind a customer about an unpaid invoice. Requires the invoice id (from list_invoices).",
     parameters: {
-      type: "object",
+      type: Type.OBJECT,
       properties: {
-        invoice_id: { type: "string", description: "PayPal invoice id" },
+        invoice_id: { type: Type.STRING, description: "PayPal invoice id" },
       },
       required: ["invoice_id"],
     },
@@ -68,13 +68,13 @@ const TOOLS: FunctionDeclaration[] = [
   {
     name: "get_cashflow_summary",
     description: "Get totals: outstanding money, overdue invoices, paid this month. Use for 'how much am I owed'.",
-    parameters: { type: "object", properties: {} },
+    parameters: { type: Type.OBJECT, properties: {} },
   },
   {
     name: "run_followup_sweep",
     description:
       "Autonomously scan ALL unpaid invoices and send reminders to every overdue customer. Use when the user asks to 'chase everyone', 'follow up on everything', or 'sweep overdue'.",
-    parameters: { type: "object", properties: {} },
+    parameters: { type: Type.OBJECT, properties: {} },
   },
 ];
 
@@ -252,7 +252,7 @@ export async function runAgent(
       const args = (call.args || {}) as Record<string, unknown>;
       let result: string;
       try {
-        result = await executeTool(call.name, args);
+        result = await executeTool(call.name!, args);
       } catch (e) {
         result = JSON.stringify({ error: String(e).slice(0, 300) });
       }

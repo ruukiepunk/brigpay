@@ -29,9 +29,132 @@
       "last_reminder_at": "2026-10-18T07:40:23.929Z",
       "created_via": "chat",
       "created_at": "2026-10-18T07:37:53.864Z"
+    },
+    {
+      "id": "INV2-YZVG-LTYK-U6WD-RJBC",
+      "invoice_number": "BRG-1609221",
+      "customer_name": "Initech Solutions",
+      "customer_email": "ap@initech.test",
+      "amount": "1200.00",
+      "currency": "USD",
+      "status": "SENT",
+      "invoice_date": "2026-10-18",
+      "due_date": "2026-10-08",
+      "reminder_count": 1,
+      "last_reminder_at": "2026-10-18T08:26:35.317Z",
+      "created_via": "chat",
+      "created_at": "2026-10-18T08:20:11.772Z"
+    },
+    {
+      "id": "INV2-28GB-3E47-QLF8-9HRE",
+      "invoice_number": "BRG-1611793",
+      "customer_name": "Umbrella Corp",
+      "customer_email": "payables@umbrella.test",
+      "amount": "3450.00",
+      "currency": "USD",
+      "status": "SENT",
+      "invoice_date": "2026-10-18",
+      "due_date": "2026-11-17",
+      "reminder_count": 0,
+      "last_reminder_at": null,
+      "created_via": "chat",
+      "created_at": "2026-10-18T08:20:13.170Z"
+    },
+    {
+      "id": "INV2-ZV22-M3S5-D6XY-DY7H",
+      "invoice_number": "BRG-1613196",
+      "customer_name": "Wayne Enterprises",
+      "customer_email": "accounting@wayne.test",
+      "amount": "890.00",
+      "currency": "USD",
+      "status": "SENT",
+      "invoice_date": "2026-10-18",
+      "due_date": "2026-10-13",
+      "reminder_count": 1,
+      "last_reminder_at": "2026-10-18T08:26:34.010Z",
+      "created_via": "chat",
+      "created_at": "2026-10-18T08:20:14.527Z"
+    },
+    {
+      "id": "INV2-MWQW-PPU7-CZDK-2CVQ",
+      "invoice_number": "BRG-1614547",
+      "customer_name": "Stark Industries",
+      "customer_email": "finance@stark.test",
+      "amount": "5600.00",
+      "currency": "USD",
+      "status": "SENT",
+      "invoice_date": "2026-10-18",
+      "due_date": "2026-12-02",
+      "reminder_count": 0,
+      "last_reminder_at": null,
+      "created_via": "chat",
+      "created_at": "2026-10-18T08:20:15.828Z"
     }
   ],
   "events": [
+    {
+      "id": "77bbce3d-2e28-43d2-b15e-44fc02fc6d1d",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 6 invoices from PayPal",
+      "at": "2026-10-18T09:25:50.153Z"
+    },
+    {
+      "id": "75971b52-7a80-4a8e-a4e0-d194e6ab6864",
+      "type": "SWEEP.RUN",
+      "invoice_id": null,
+      "message": "Sweep #2: 2/2 reminders sent",
+      "at": "2026-10-18T08:26:35.371Z"
+    },
+    {
+      "id": "e5fd5f40-f8e4-4f14-b429-94e6a618cb8a",
+      "type": "REMINDER.SENT",
+      "invoice_id": "INV2-YZVG-LTYK-U6WD-RJBC",
+      "message": "Sweep: reminder to Initech Solutions (BRG-1609221)",
+      "at": "2026-10-18T08:26:35.335Z"
+    },
+    {
+      "id": "9832f248-dffb-40c9-b59f-8c3e0902cb61",
+      "type": "REMINDER.SENT",
+      "invoice_id": "INV2-ZV22-M3S5-D6XY-DY7H",
+      "message": "Sweep: reminder to Wayne Enterprises (BRG-1613196)",
+      "at": "2026-10-18T08:26:34.029Z"
+    },
+    {
+      "id": "aeb979d9-faba-4ce9-bf22-2708a6d8eab0",
+      "type": "SYNC.COMPLETED",
+      "invoice_id": null,
+      "message": "Synced 6 invoices from PayPal",
+      "at": "2026-10-18T08:20:55.349Z"
+    },
+    {
+      "id": "764b23df-52ba-4855-9b77-33d5f7ecd0ff",
+      "type": "INVOICE.SENT",
+      "invoice_id": "INV2-MWQW-PPU7-CZDK-2CVQ",
+      "message": "Invoice BRG-1614547 (USD 5600.00) sent to finance@stark.test",
+      "at": "2026-10-18T08:20:15.844Z"
+    },
+    {
+      "id": "e29732de-71fb-4cab-bdaa-711beb764da7",
+      "type": "INVOICE.SENT",
+      "invoice_id": "INV2-ZV22-M3S5-D6XY-DY7H",
+      "message": "Invoice BRG-1613196 (USD 890.00) sent to accounting@wayne.test",
+      "at": "2026-10-18T08:20:14.545Z"
+    },
+    {
+      "id": "dc279ab8-bf4c-46e3-86e0-9c6d29eb266b",
+      "type": "INVOICE.SENT",
+      "invoice_id": "INV2-28GB-3E47-QLF8-9HRE",
+      "message": "Invoice BRG-1611793 (USD 3450.00) sent to payables@umbrella.test",
+      "at": "2026-10-18T08:20:13.194Z"
+    },
+    {
+      "id": "7b3c108f-8339-4070-9353-19445037c0a7",
+      "type": "INVOICE.SENT",
+      "invoice_id": "INV2-YZVG-LTYK-U6WD-RJBC",
+      "message": "Invoice BRG-1609221 (USD 1200.00) sent to ap@initech.test",
+      "at": "2026-10-18T08:20:11.791Z"
+    },
     {
       "id": "723b09c3-36eb-4c45-a277-460a92698b23",
       "type": "SYNC.COMPLETED",
@@ -225,7 +348,27 @@
       "role": "model",
       "text": "I've sent a payment reminder to ACME Corp for invoice #BRG-8684383 ($2,500.00).",
       "at": "2026-10-18T07:39:44.008Z"
+    },
+    {
+      "role": "user",
+      "text": "Create and send these invoices: 1) Initech Solutions ap@initech.test ,200 for monthly IT support, due in 10 days. 2) Umbrella Corp payables@umbrella.test ,450 for server migration, due in 30 days. 3) Wayne Enterprises accounting@wayne.test  for security audit, due in 15 days. 4) Stark Industries finance@stark.test ,600 for cloud setup, due in 45 days.",
+      "at": "2026-10-18T08:18:18.395Z"
+    },
+    {
+      "role": "model",
+      "text": "I cannot send these yet because Wayne Enterprises is missing a billing amount, and the amounts for Initech Solutions (,200), Umbrella Corp (,450), and Stark Industries (,600) appear incomplete. Could you please provide the amount for Wayne Enterprises and confirm the exact amounts for the others so I can create them?",
+      "at": "2026-10-18T08:19:24.120Z"
+    },
+    {
+      "role": "user",
+      "text": "Create and send these 4 invoices one by one: 1) Initech Solutions, ap@initech.test, 1200 USD for monthly IT support, due in 10 days. 2) Umbrella Corp, payables@umbrella.test, 3450 USD for server migration, due in 30 days. 3) Wayne Enterprises, accounting@wayne.test, 890 USD for security audit, due in 15 days. 4) Stark Industries, finance@stark.test, 5600 USD for cloud setup, due in 45 days.",
+      "at": "2026-10-18T08:19:40.419Z"
+    },
+    {
+      "role": "model",
+      "text": "I've created and sent all four invoices: Initech Solutions for $1,200.00 (#BRG-1609221), Umbrella Corp for $3,450.00 (#BRG-1611793), Wayne Enterprises for $890.00 (#BRG-1613196), and Stark Industries for $5,600.00 (#BRG-1614547).",
+      "at": "2026-10-18T08:20:38.482Z"
     }
   ],
-  "sweep_runs": 1
+  "sweep_runs": 2
 }
