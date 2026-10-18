@@ -135,8 +135,8 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
           status: i.status,
           total: amt.value,
           currency: amt.currency,
-          customer: paypal.emailFrom(i) || "?",
-          payment_term: i.detail?.payment_term?.term_type || "?",
+          customer: paypal.recipientNameFrom(i) || paypal.emailFrom(i) || "?",
+          due_date: paypal.dueDateFrom(i),
         };
       });
       const f = args.status_filter as string | undefined;
@@ -308,7 +308,7 @@ You operate real PayPal Invoicing APIs through your tools.
 Rules:
 - Always confirm amounts and emails before creating an invoice: if the user didn't give an email, ask for it.
 - Default currency is USD; default due date is 14 days unless told otherwise.
-- When asked about unpaid customers, use list_invoices and summarize in 1-3 sentences with names and amounts.
+- When asked about unpaid customers, use list_invoices and summarize in 1-3 sentences: always include the total dollar amount AND mention 2-3 customer names with amounts. Quote names (customer field), not invoice numbers.
 - NEVER add up amounts yourself. Tools return pre-computed totals (total_amount, outstanding_total) — quote those numbers verbatim. Mental math is forbidden.
 - When asked to chase people, use run_followup_sweep or send_reminder.
 - Keep replies SHORT (1-3 sentences) and concrete. No markdown tables. Prices formatted like $1,250.00.
