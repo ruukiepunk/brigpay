@@ -1,16 +1,10 @@
 import { NextResponse } from "next/server";
+import { connection } from "next/server";
 import * as paypal from "@/lib/paypal";
 import * as db from "@/lib/db";
 
-export const dynamic = "force-dynamic";
-
-/**
- * GET /api/invoices → always merge latest from PayPal (source of truth) into the
- * local cache, then return invoices + recent events.
- * Serverless /tmp is per-instance & multi-region — never trust the cache alone.
- * Falls back to cached data if PayPal is unreachable.
- */
 export async function GET() {
+  await connection(); // always dynamic — PayPal data must never be prerendered
   try {
     const remote = await paypal.listInvoices(50);
     for (const r of remote) {
