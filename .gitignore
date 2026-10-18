@@ -43,3 +43,7 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# buyer sandbox credentials + browser profile (never commit)
+docs/vo/.buyer.json
+docs/vo/.buyer-profile/
