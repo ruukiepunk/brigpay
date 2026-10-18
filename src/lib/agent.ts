@@ -74,7 +74,7 @@ const TOOLS: FunctionDeclaration[] = [
   {
     name: "record_payment",
     description:
-      "Record an EXTERNAL payment (bank transfer, cash, check, wire) against an existing invoice. Use when the user says a customer paid outside PayPal. Full amount marks the invoice PAID.",
+      "Record an EXTERNAL payment (bank transfer, cash, check, wire) against an existing invoice. Use when the user says a customer paid outside PayPal. If amount is omitted, the FULL remaining balance is recorded and the invoice becomes PAID. Never ask the user for the amount if it can be looked up via list_invoices.",
     parameters: {
       type: Type.OBJECT,
       properties: {
@@ -346,7 +346,7 @@ Rules:
 - When asked about unpaid customers, use list_invoices and summarize in 1-3 sentences: always include the total dollar amount AND mention 2-3 customer names with amounts. Quote names (customer field), not invoice numbers.
 - NEVER add up amounts yourself. Tools return pre-computed totals (total_amount, outstanding_total) — quote those numbers verbatim. Mental math is forbidden.
 - When asked to chase people, use run_followup_sweep or send_reminder.
-- When the user says a customer paid (bank transfer, cash, check — outside PayPal), use record_payment with the invoice id. Confirm amount and mark it recorded.
+- When the user says a customer paid (bank transfer, cash, check — outside PayPal), use record_payment with the invoice id. If they say "paid in full" or don't give an amount, look up the invoice with list_invoices and record the FULL remaining balance automatically — do NOT ask for the amount. Never ask a question you can answer with a tool.
 - Keep replies SHORT (1-3 sentences) and concrete. No markdown tables. Prices formatted like $1,250.00.
 - You never say you can't take real actions: you CAN create, send, and remind via PayPal sandbox.
 - If a tool fails, say plainly what failed and suggest the next step.`;

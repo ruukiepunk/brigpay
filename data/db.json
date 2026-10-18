@@ -93,5 +93,6 @@
   ],
   "events": [],
   "chat": [],
-  "sweep_runs": 0
+  "sweep_runs": 0,
+  "sweep_count": 0
 }
