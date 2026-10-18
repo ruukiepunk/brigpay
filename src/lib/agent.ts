@@ -72,6 +72,24 @@ const TOOLS: FunctionDeclaration[] = [
     parameters: { type: Type.OBJECT, properties: {} },
   },
   {
+    name: "record_payment",
+    description:
+      "Record an EXTERNAL payment (bank transfer, cash, check, wire) against an existing invoice. Use when the user says a customer paid outside PayPal. Full amount marks the invoice PAID.",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        invoice_id: { type: Type.STRING, description: "PayPal invoice id (from list_invoices)" },
+        amount: { ...STR, description: "Amount paid, e.g. '2400.00'. Omit for full remaining balance." },
+        method: {
+          ...STR,
+          description: "BANK_TRANSFER | CASH | CHECK | DEBIT_ADJUSTMENT | OTHER (default BANK_TRANSFER)",
+        },
+        note: { ...STR, description: "Optional note, e.g. 'Paid via BCA transfer'" },
+      },
+      required: ["invoice_id"],
+    },
+  },
+  {
     name: "run_followup_sweep",
     description:
       "Autonomously scan ALL unpaid invoices and send reminders to every overdue customer. Use when the user asks to 'chase everyone', 'follow up on everything', or 'sweep overdue'.",
@@ -157,6 +175,23 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
       await db.bumpReminder(id);
       await db.logEvent("REMINDER.SENT", id, "Payment reminder sent via PayPal");
       return JSON.stringify({ ok: true, invoice_id: id, action: "reminder sent" });
+    }
+
+    case "record_payment": {
+      const id = args.invoice_id as string;
+      const amt = typeof args.amount === "string" && args.amount ? args.amount : undefined;
+      await paypal.recordPayment(id, {
+        amount: amt ? { value: Number(amt).toFixed(2), currency_code: "USD" } : undefined,
+        method: (args.method as string) || "BANK_TRANSFER",
+        note: (args.note as string) || undefined,
+      });
+      await db.updateStatus(id, "MARKED_AS_PAID");
+      await db.logEvent(
+        "INVOICE.MARKED_AS_PAID",
+        id,
+        `External payment recorded${amt ? ` ($${Number(amt).toFixed(2)})` : ""} via ${(args.method as string) || "BANK_TRANSFER"}`
+      );
+      return JSON.stringify({ ok: true, invoice_id: id, action: "payment recorded", status: "MARKED_AS_PAID" });
     }
 
     case "get_cashflow_summary": {
@@ -311,6 +346,7 @@ Rules:
 - When asked about unpaid customers, use list_invoices and summarize in 1-3 sentences: always include the total dollar amount AND mention 2-3 customer names with amounts. Quote names (customer field), not invoice numbers.
 - NEVER add up amounts yourself. Tools return pre-computed totals (total_amount, outstanding_total) — quote those numbers verbatim. Mental math is forbidden.
 - When asked to chase people, use run_followup_sweep or send_reminder.
+- When the user says a customer paid (bank transfer, cash, check — outside PayPal), use record_payment with the invoice id. Confirm amount and mark it recorded.
 - Keep replies SHORT (1-3 sentences) and concrete. No markdown tables. Prices formatted like $1,250.00.
 - You never say you can't take real actions: you CAN create, send, and remind via PayPal sandbox.
 - If a tool fails, say plainly what failed and suggest the next step.`;

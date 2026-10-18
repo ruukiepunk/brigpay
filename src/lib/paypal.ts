@@ -180,6 +180,23 @@ export async function sendInvoice(invoiceId: string, sendToMerchant = false): Pr
   });
 }
 
+/** Record an EXTERNAL payment (bank transfer, cash, check) against an invoice.
+ *  Full amount → invoice becomes MARKED_AS_PAID; partial → PARTIALLY_PAID. */
+export async function recordPayment(
+  invoiceId: string,
+  params: { amount?: { value: string; currency_code: string }; method?: string; note?: string; paymentDate?: string }
+): Promise<void> {
+  await ppFetch(`/v2/invoicing/invoices/${invoiceId}/payments`, {
+    method: "POST",
+    body: JSON.stringify({
+      method: params.method || "BANK_TRANSFER",
+      payment_date: params.paymentDate || new Date().toISOString().slice(0, 10),
+      ...(params.amount ? { amount: params.amount } : {}),
+      note: params.note || "Payment recorded via BrigPay",
+    }),
+  });
+}
+
 /** Send a payment reminder for an already-sent invoice */
 export async function remindInvoice(invoiceId: string): Promise<void> {
   await ppFetch(`/v2/invoicing/invoices/${invoiceId}/remind`, {

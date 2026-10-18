@@ -130,42 +130,29 @@ async function main() {
     console.log("scene C (chase sweep) done");
   }
 
-  // ---------- SCENE D: buyer bayar → PAID (butuh kredensial buyer sandbox) ----------
-  if (want("D") && process.env.BUYER_EMAIL && process.env.BUYER_PASSWORD) {
-    // invoice terbaru dari app
-    const invRes = await get(`${APP}/api/invoices`);
-    const list = JSON.parse(invRes.body).invoices || [];
-    const target = list.find((i) => i.customer_name.includes("Tyrell")) || list.find((i) => i.customer_name.includes("Cyberdyne")) || list[0];
-    const token = await paypalToken(env);
-    const invRaw = await get(`${env.PAYPAL_API_BASE}/v2/invoicing/invoices/${target.id}`, {
-      Authorization: `Bearer ${token}`,
-    });
-    const inv = JSON.parse(invRaw.body);
-    const payLink = (inv.links || []).find((l) => l.rel === "payer-view")?.href;
-    if (!payLink) throw new Error("pay link tidak ditemukan");
-
+  // ---------- SCENE D: user tells agent customer paid → record_payment → PAID ----------
+  if (want("D")) {
     const ctx = await browser.newContext({ viewport: VIEW, recordVideo: { dir: OUT, size: VIEW } });
     const page = await ctx.newPage();
-    await page.goto(payLink, { waitUntil: "networkidle" });
-    // login buyer kalau diminta
-    if (page.url().includes("signin")) {
-      await page.fill("#email", process.env.BUYER_EMAIL);
-      await page.click("#btnNext");
-      await sleep(1500);
-      await page.fill("#password", process.env.BUYER_PASSWORD);
-      await page.click("#btnLogin");
-      await page.waitForLoadState("networkidle");
-    }
-    await sleep(1500);
-    // klik Pay Now (selector defensif)
-    const payBtn = page.locator("button:has-text('Pay Now'), button:has-text('Pay now'), button[type=submit]").first();
-    await payBtn.click({ timeout: 30000 }).catch(() => {});
-    await sleep(4000);
+    await page.goto(`${APP}/chat`, { waitUntil: "networkidle" });
+    await sleep(1200);
+    await typeNatural(
+      page,
+      "input[placeholder*='Invoice Jane']",
+      "Good news — Tyrell Corporation just paid invoice BRG-5432701 in full by bank transfer. Record the payment."
+    );
+    await page.keyboard.press("Enter");
+    await page.waitForResponse(
+      (r) => r.url().includes("/api/chat") && r.request().method() === "POST",
+      { timeout: 90000 }
+    );
+    await page.waitForFunction(() => /record/i.test(document.body.innerText), { timeout: 30000 });
+    await sleep(3000);
     await ctx.close();
-    console.log("scene D (buyer pays) done — tunggu webhook ~5 dtk, lalu:");
+    console.log("scene D (record payment) done — tunggu webhook/sync, lalu:");
 
-    // ---------- SCENE E: dashboard refresh → status PAID ----------
-    await sleep(5000);
+    // ---------- SCENE E: dashboard reload → status PAID ----------
+    await sleep(3000);
     const ctx2 = await browser.newContext({ viewport: VIEW, recordVideo: { dir: OUT, size: VIEW } });
     const page2 = await ctx2.newPage();
     await page2.goto(`${APP}/dashboard`, { waitUntil: "networkidle" });
@@ -180,8 +167,8 @@ async function main() {
     await sleep(4000);
     await ctx2.close();
     console.log("scene E (PAID appears) done");
-  } else {
-    console.log("scene D+E dilewati (BUYER_EMAIL/BUYER_PASSWORD belum di-set)");
+  } else if (only.length === 0) {
+    console.log("scene D+E dilewati (argumen scene tidak disertakan)");
   }
 
   await browser.close();

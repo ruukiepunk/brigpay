@@ -100,6 +100,15 @@ export async function bumpReminder(id: string): Promise<void> {
   }
 }
 
+export async function updateStatus(id: string, status: string): Promise<void> {
+  const db = await load();
+  const inv = db.invoices.find((i) => i.id === id);
+  if (inv) {
+    inv.status = status;
+    await save(db);
+  }
+}
+
 export async function logEvent(type: string, invoice_id: string | null, message: string): Promise<void> {
   const db = await load();
   db.events.unshift({
