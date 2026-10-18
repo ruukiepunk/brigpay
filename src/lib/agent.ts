@@ -78,7 +78,7 @@ const TOOLS: FunctionDeclaration[] = [
     parameters: {
       type: Type.OBJECT,
       properties: {
-        invoice_id: { type: Type.STRING, description: "PayPal invoice id (from list_invoices)" },
+        invoice_id: { type: Type.STRING, description: "The invoice to record payment against — you may pass EITHER the human invoice number (e.g. BRG-5432701) OR the PayPal invoice id. Both work." },
         amount: { ...STR, description: "Amount paid, e.g. '2400.00'. Omit for full remaining balance." },
         method: {
           ...STR,
@@ -178,7 +178,13 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
     }
 
     case "record_payment": {
-      const id = args.invoice_id as string;
+      let id = args.invoice_id as string;
+      // Accept either the PayPal invoice id OR the human invoice number (BRG-…)
+      if (!/^INV2?-/.test(id)) {
+        const remote = await paypal.listInvoices(50);
+        const match = remote.find((i) => paypal.invoiceNumberFrom(i) === id || paypal.invoiceNumberFrom(i).toUpperCase() === id.toUpperCase());
+        if (match?.id) id = match.id;
+      }
       const amt = typeof args.amount === "string" && args.amount ? args.amount : undefined;
       await paypal.recordPayment(id, {
         amount: amt ? { value: Number(amt).toFixed(2), currency_code: "USD" } : undefined,
@@ -346,7 +352,7 @@ Rules:
 - When asked about unpaid customers, use list_invoices and summarize in 1-3 sentences: always include the total dollar amount AND mention 2-3 customer names with amounts. Quote names (customer field), not invoice numbers.
 - NEVER add up amounts yourself. Tools return pre-computed totals (total_amount, outstanding_total) — quote those numbers verbatim. Mental math is forbidden.
 - When asked to chase people, use run_followup_sweep or send_reminder.
-- When the user says a customer paid (bank transfer, cash, check — outside PayPal), use record_payment with the invoice id. If they say "paid in full" or don't give an amount, look up the invoice with list_invoices and record the FULL remaining balance automatically — do NOT ask for the amount. Never ask a question you can answer with a tool.
+- When the user says a customer paid (bank transfer, cash, check — outside PayPal), you MUST call record_payment in that same turn. Pass the invoice number the user gave (e.g. BRG-5432701) as invoice_id — it resolves the PayPal id automatically. If they say "paid in full" or give no amount, omit amount so the FULL balance is recorded. NEVER ask the user for the amount or to confirm — just record it and report what you did. Asking a question instead of calling the tool is a failure.
 - Keep replies SHORT (1-3 sentences) and concrete. No markdown tables. Prices formatted like $1,250.00.
 - You never say you can't take real actions: you CAN create, send, and remind via PayPal sandbox.
 - If a tool fails, say plainly what failed and suggest the next step.`;
