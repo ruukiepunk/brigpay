@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import * as paypal from "@/lib/paypal";
 import * as db from "@/lib/db";
+import { syncFromPayPal } from "@/lib/sync";
 
 /**
  * POST /api/sweep — autonomous follow-up run:
@@ -9,10 +10,10 @@ import * as db from "@/lib/db";
  */
 export async function POST() {
   try {
-    const invoices = await db.getInvoices();
+    const invoices = await syncFromPayPal();
     const today = new Date().toISOString().slice(0, 10);
     const targets = invoices.filter(
-      (i) => ["SENT", "PAYMENT_PENDING", "PARTIALLY_PAID"].includes(i.status) && i.due_date < today
+      (i) => ["SENT", "PAYMENT_PENDING", "PARTIALLY_PAID"].includes(i.status) && !!i.due_date && i.due_date < today
     );
 
     const results: Array<{ customer: string; invoice: string; amount: string; ok: boolean }> = [];

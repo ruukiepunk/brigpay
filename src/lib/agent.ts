@@ -5,6 +5,7 @@
 import { GoogleGenAI, Type, type FunctionDeclaration, type Schema } from "@google/genai";
 import * as paypal from "./paypal";
 import * as db from "./db";
+import * as sync from "./sync";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
@@ -140,7 +141,14 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
       });
       const f = args.status_filter as string | undefined;
       if (f) list = list.filter((i) => i.status.toUpperCase() === f.toUpperCase());
-      return JSON.stringify({ count: list.length, invoices: list.slice(0, 25) });
+      // totals computed by CODE — the model must quote these, never re-add itself
+      const sum = list.reduce((s, i) => s + Number(i.total || 0), 0);
+      return JSON.stringify({
+        count: list.length,
+        total_amount: sum.toFixed(2),
+        currency: list[0]?.currency || "USD",
+        invoices: list.slice(0, 25),
+      });
     }
 
     case "send_reminder": {
@@ -152,12 +160,12 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
     }
 
     case "get_cashflow_summary": {
-      const invoices = await db.getInvoices();
+      const invoices = await sync.syncFromPayPal();
       const outstanding = invoices
         .filter((i) => ["SENT", "PAYMENT_PENDING", "PARTIALLY_PAID"].includes(i.status))
         .reduce((s, i) => s + Number(i.amount), 0);
       const overdue = invoices.filter(
-        (i) => ["SENT", "PAYMENT_PENDING"].includes(i.status) && i.due_date < new Date().toISOString().slice(0, 10)
+        (i) => ["SENT", "PAYMENT_PENDING"].includes(i.status) && !!i.due_date && i.due_date < new Date().toISOString().slice(0, 10)
       );
       const month = new Date().toISOString().slice(0, 7);
       const paidThisMonth = invoices
@@ -173,9 +181,9 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
     }
 
     case "run_followup_sweep": {
-      const invoices = await db.getInvoices();
+      const invoices = await sync.syncFromPayPal();
       const today = new Date().toISOString().slice(0, 10);
-      const targets = invoices.filter((i) => ["SENT", "PAYMENT_PENDING"].includes(i.status) && i.due_date < today);
+      const targets = invoices.filter((i) => ["SENT", "PAYMENT_PENDING"].includes(i.status) && !!i.due_date && i.due_date < today);
       const results: Array<{ customer: string; invoice: string; ok: boolean }> = [];
       for (const t of targets) {
         try {
@@ -301,6 +309,7 @@ Rules:
 - Always confirm amounts and emails before creating an invoice: if the user didn't give an email, ask for it.
 - Default currency is USD; default due date is 14 days unless told otherwise.
 - When asked about unpaid customers, use list_invoices and summarize in 1-3 sentences with names and amounts.
+- NEVER add up amounts yourself. Tools return pre-computed totals (total_amount, outstanding_total) — quote those numbers verbatim. Mental math is forbidden.
 - When asked to chase people, use run_followup_sweep or send_reminder.
 - Keep replies SHORT (1-3 sentences) and concrete. No markdown tables. Prices formatted like $1,250.00.
 - You never say you can't take real actions: you CAN create, send, and remind via PayPal sandbox.

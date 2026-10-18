@@ -247,3 +247,12 @@ export function recipientNameFrom(r: InvoiceSummary): string {
 export function invoiceNumberFrom(r: InvoiceSummary): string {
   return r.invoice_number || r.detail?.invoice_number || "";
 }
+
+/** List responses omit top-level dates — they live under detail (2023-12 schema) */
+export function dueDateFrom(r: InvoiceSummary): string {
+  return r.due_date || r.detail?.payment_term?.due_date || "";
+}
+
+export function invoiceDateFrom(r: InvoiceSummary): string {
+  return r.invoice_date || r.detail?.invoice_date || "";
+}
