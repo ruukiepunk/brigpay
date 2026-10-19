@@ -52,3 +52,5 @@ docs/vo/clips/
 docs/vo/build/
 docs/vo/*.png
 !docs/vo/title.png
+
+.serena/
