@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 interface Msg {
   role: "user" | "model";
   text: string;
+  error?: boolean;
+  retryOf?: string;
 }
 
 const QUICK_ACTIONS = [
@@ -38,17 +40,52 @@ export default function ChatPage() {
     setInput("");
     setMessages((m) => [...m, { role: "user", text: msg }]);
     setBusy(true);
+    // Batas 45 dtk (di bawah limit function 60 dtk) biar user nggak nunggu dots tanpa ujung
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 45000);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: msg }),
+        signal: ctrl.signal,
       });
-      const data = await res.json();
-      setMessages((m) => [...m, { role: "model", text: data.reply || `Error: ${data.error || "no reply"}` }]);
+      if (!res.ok) {
+        let detail = "The agent hit an error.";
+        try {
+          const d = (await res.json()) as { error?: string };
+          if (d.error) detail = d.error;
+        } catch {
+          /* body bukan JSON (mis. 504) -> pakai pesan generik */
+        }
+        setMessages((m) => [...m, { role: "model", text: `${detail} Tap Retry to try again.`, error: true, retryOf: msg }]);
+        return;
+      }
+      const data = (await res.json()) as { reply?: string; error?: string };
+      const reply = data.reply;
+      if (!reply) {
+        setMessages((m) => [
+          ...m,
+          { role: "model", text: `No reply came back${data.error ? ` (${data.error})` : ""}. Tap Retry to try again.`, error: true, retryOf: msg },
+        ]);
+        return;
+      }
+      setMessages((m) => [...m, { role: "model", text: reply }]);
     } catch (e) {
-      setMessages((m) => [...m, { role: "model", text: `Network error: ${String(e)}` }]);
+      const timedOut = e instanceof DOMException && e.name === "AbortError";
+      setMessages((m) => [
+        ...m,
+        {
+          role: "model",
+          text: timedOut
+            ? "The agent took too long to respond (45s). Tap Retry to try again."
+            : "Network error — check your connection and try again.",
+          error: true,
+          retryOf: msg,
+        },
+      ]);
     } finally {
+      clearTimeout(timer);
       setBusy(false);
     }
   };
@@ -85,7 +122,7 @@ export default function ChatPage() {
         )}
 
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+          <div key={i} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
             <div
               className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                 m.role === "user" ? "chat-bubble-user rounded-br-md" : "chat-bubble-agent rounded-bl-md"
@@ -93,6 +130,16 @@ export default function ChatPage() {
             >
               {m.text}
             </div>
+            {m.error && m.retryOf && (
+              <button
+                onClick={() => send(m.retryOf || "")}
+                disabled={busy}
+                className="mt-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition-opacity hover:opacity-75 disabled:opacity-40"
+                style={{ borderColor: "var(--border)", color: "var(--accent)" }}
+              >
+                ↻ Retry
+              </button>
+            )}
           </div>
         ))}
 
