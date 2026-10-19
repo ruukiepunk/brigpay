@@ -30,7 +30,8 @@ BrigPay: ⚡ sweep finds it overdue → PayPal reminder sent automatically
 - **Plain-English invoicing** — "Invoice Jane $800 for logo design, due in 7 days" → real PayPal invoice created + emailed.
 - **AI collections agent** — asks `Who hasn't paid me?` → agent queries PayPal and answers with names & totals.
 - **Autonomous follow-up sweep** — one click (or one sentence) chases every overdue customer with PayPal payment reminders.
-- **PayPal webhooks** — `INVOICE.PAID` / `INVOICE.CANCELLED` events update the dashboard in real time.
+- **PayPal webhooks** — `INVOICING.INVOICE.PAID` / `.CANCELLED` / `.SENT` / `.AUTOMATIC-REMINDER-SENT` events update the dashboard in real time.
+- **Record off-PayPal payments** — customer paid by bank transfer, cash, or check? Tell the agent; it records the external payment against the real PayPal invoice (`POST /v2/invoicing/invoices/{id}/payments`) so the books stay accurate. Idempotent — never double-records.
 - **AG Grid command center** — sortable/filterable invoice table, auto **OVERDUE** status pills, per-row *Remind* button, summary cards (outstanding, overdue, paid this month, reminders sent), live activity feed.
 - **Sandbox-first** — zero real money at risk; everything runs against PayPal Sandbox APIs.
 
@@ -53,7 +54,7 @@ BrigPay: ⚡ sweep finds it overdue → PayPal reminder sent automatically
                               └─────────────────────┘
 ```
 
-**The agent has 5 real tools** (Gemini function calling):
+**The agent has 6 real tools** (Gemini function calling):
 
 | Tool | What it does | PayPal API |
 |---|---|---|
@@ -62,8 +63,9 @@ BrigPay: ⚡ sweep finds it overdue → PayPal reminder sent automatically
 | `send_reminder` | Nudges one customer | `POST /v2/invoicing/invoices/{id}/remind` |
 | `run_followup_sweep` | Chases **every** overdue invoice | loop of `/remind` |
 | `get_cashflow_summary` | Outstanding / overdue / paid totals | local cache + PayPal |
+| `record_payment` | Records a bank-transfer/cash payment | `POST /v2/invoicing/invoices/{id}/payments` |
 
-Webhook receiver: `POST /api/webhooks/paypal` handles `INVOICE.PAID`, `INVOICE.CANCELLED`, `INVOICE.PAYMENT_REMINDER` and keeps the dashboard in sync.
+Webhook receiver: `POST /api/webhooks/paypal` handles `INVOICING.INVOICE.PAID`, `.CANCELLED`, `.SENT` and `.AUTOMATIC-REMINDER-SENT`, keeping the dashboard in sync in real time.
 
 ## Tech stack
 
