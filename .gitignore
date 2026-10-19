@@ -47,3 +47,8 @@ next-env.d.ts
 # buyer sandbox credentials + browser profile (never commit)
 docs/vo/.buyer.json
 docs/vo/.buyer-profile/
+
+docs/vo/clips/
+docs/vo/build/
+docs/vo/*.png
+!docs/vo/title.png

@@ -146,25 +146,31 @@ async function main() {
       (r) => r.url().includes("/api/chat") && r.request().method() === "POST",
       { timeout: 120000 }
     );
-    let reply = "";
-    try { reply = ((await resp.json()) || {}).reply || ""; } catch {}
-    console.log("agent reply:", reply.slice(0, 220));
-    if (!reply || /fail|error|couldn|not found/i.test(reply)) {
+    console.log("chat POST status:", resp.status());
+    // tunggu balasan model muncul di DOM — lebih andal dari resp.json()
+    await page.waitForFunction(() => {
+      const t = document.body.innerText;
+      return /(recorded|marked as paid|already recorded)/i.test(t) || /(failed|couldn|not found)/i.test(t);
+    }, { timeout: 60000 });
+    const domText = await page.evaluate(() => document.body.innerText);
+    console.log("DOM tail:", domText.split("\n").slice(-6).join(" | ").slice(0, 300));
+    if (/(failed|couldn|not found)/i.test(domText)) {
       await ctx.close();
-      throw new Error("SCENE D GAGAL — agent tidak sukses: " + reply.slice(0, 200));
+      throw new Error("SCENE D GAGAL — balasan error terlihat di DOM");
     }
-    await page.waitForFunction(() => /record/i.test(document.body.innerText), { timeout: 20000 });
     await sleep(3000);
+    const vidD = page.video();
     await ctx.close();
+    if (vidD) await vidD.saveAs(path.join(OUT, "sceneD.webm"));
     // verifikasi keras: status benar-benar PAID di PayPal
     const env = envLocal();
     const tok = await paypalToken(env);
     const raw = await get(`${env.PAYPAL_API_BASE}/v2/invoicing/invoices?page_size=50`, { Authorization: `Bearer ${tok}` });
-    const list = (JSON.parse(raw.body).invoices) || [];
+    const list = (JSON.parse(raw.body).invoices) || (JSON.parse(raw.body).items) || [];
     const t = list.find((i) => ((i.detail && i.detail.invoice_number) || "").includes("5432701"));
     if (!t || !/PAID/.test(t.status)) throw new Error("SCENE D verifikasi gagal: status=" + (t && t.status));
     console.log("scene D verified ✓ Tyrell status =", t.status);
-
+  } else if (want("E")) {
     // ---------- SCENE E: dashboard reload → status PAID ----------
     await sleep(3000);
     const ctx2 = await browser.newContext({ viewport: VIEW, recordVideo: { dir: OUT, size: VIEW } });
@@ -179,7 +185,9 @@ async function main() {
       );
     }, { timeout: 30000 });
     await sleep(4000);
+    const vidE = page2.video();
     await ctx2.close();
+    if (vidE) await vidE.saveAs(path.join(OUT, "sceneE.webm"));
     console.log("scene E (PAID appears) done");
   } else if (only.length === 0) {
     console.log("scene D+E dilewati (argumen scene tidak disertakan)");
