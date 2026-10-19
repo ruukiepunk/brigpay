@@ -142,14 +142,28 @@ async function main() {
       "Good news — Tyrell Corporation just paid invoice BRG-5432701 in full by bank transfer. Record the payment."
     );
     await page.keyboard.press("Enter");
-    await page.waitForResponse(
+    const resp = await page.waitForResponse(
       (r) => r.url().includes("/api/chat") && r.request().method() === "POST",
-      { timeout: 90000 }
+      { timeout: 120000 }
     );
-    await page.waitForFunction(() => /record/i.test(document.body.innerText), { timeout: 30000 });
+    let reply = "";
+    try { reply = ((await resp.json()) || {}).reply || ""; } catch {}
+    console.log("agent reply:", reply.slice(0, 220));
+    if (!reply || /fail|error|couldn|not found/i.test(reply)) {
+      await ctx.close();
+      throw new Error("SCENE D GAGAL — agent tidak sukses: " + reply.slice(0, 200));
+    }
+    await page.waitForFunction(() => /record/i.test(document.body.innerText), { timeout: 20000 });
     await sleep(3000);
     await ctx.close();
-    console.log("scene D (record payment) done — tunggu webhook/sync, lalu:");
+    // verifikasi keras: status benar-benar PAID di PayPal
+    const env = envLocal();
+    const tok = await paypalToken(env);
+    const raw = await get(`${env.PAYPAL_API_BASE}/v2/invoicing/invoices?page_size=50`, { Authorization: `Bearer ${tok}` });
+    const list = (JSON.parse(raw.body).invoices) || [];
+    const t = list.find((i) => ((i.detail && i.detail.invoice_number) || "").includes("5432701"));
+    if (!t || !/PAID/.test(t.status)) throw new Error("SCENE D verifikasi gagal: status=" + (t && t.status));
+    console.log("scene D verified ✓ Tyrell status =", t.status);
 
     // ---------- SCENE E: dashboard reload → status PAID ----------
     await sleep(3000);

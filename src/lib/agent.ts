@@ -184,6 +184,12 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
         const remote = await paypal.listInvoices(50);
         const match = remote.find((i) => paypal.invoiceNumberFrom(i) === id || paypal.invoiceNumberFrom(i).toUpperCase() === id.toUpperCase());
         if (match?.id) id = match.id;
+        else return JSON.stringify({ error: `Invoice ${args.invoice_id} not found. Use list_invoices to get the right number.` });
+      }
+      // Idempotency guard: if the invoice is already fully paid, report success — never double-record
+      const detail = await paypal.getInvoice(id).catch(() => null);
+      if (detail && (detail.status === "PAID" || detail.status === "MARKED_AS_PAID")) {
+        return JSON.stringify({ ok: true, invoice_id: id, action: "payment already recorded", status: detail.status, note: "no duplicate created" });
       }
       const amt = typeof args.amount === "string" && args.amount ? args.amount : undefined;
       await paypal.recordPayment(id, {
