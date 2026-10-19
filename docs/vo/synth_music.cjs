@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const SR = 44100;
-const DUR = 84.9;
+const DUR = 81.2;
 const N = Math.round(SR * DUR);
 const XF = 2.4; // crossfade seconds between chords
 

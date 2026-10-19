@@ -42,17 +42,16 @@ Write-Host "=== seg4b sceneC main 1.8s..end slow 0.596x + freeze (365f) ==="
 Write-Host "=== seg5 sceneD ss4.5 speed 2.65x ==="
 & $ff -y -ss 4.5 -i "$CL\sceneD.webm" -vf "setpts=PTS/2.65,tpad=stop_mode=clone:stop_duration=3,trim=0:12.70,setpts=PTS-STARTPTS,$vfEnd" -frames:v 381 @enc "$work\seg5.mp4" 2>$null
 
-Write-Host "=== seg6 sceneE (tanpa reload): 0.8s + 3.5s + freeze 2.2s ==="
+Write-Host "=== seg6 sceneE (tanpa reload, tanpa jeda diam): 0.8s + 2.0s = 2.8s ==="
 & $ff -y -ss 6.5 -t 0.8 -i "$CL\sceneE.webm" -vf "$vfEnd" -frames:v 24 @enc "$work\seg6a.mp4" 2>$null
-& $ff -y -ss 9.5 -t 3.5 -i "$CL\sceneE.webm" -vf "$vfEnd" -frames:v 105 @enc "$work\seg6b.mp4" 2>$null
-& $ff -y -loop 1 -framerate 30 -i "$work\fillE.png" -vf "$vfEnd" -frames:v 66 @enc "$work\seg6c.mp4" 2>$null
+& $ff -y -ss 9.5 -t 2.0 -i "$CL\sceneE.webm" -vf "$vfEnd" -frames:v 60 @enc "$work\seg6b.mp4" 2>$null
 
 Write-Host "=== seg7 broll outro (ss20 slow-mo 0.853x) ==="
 & $ff -y -ss 20 -i "$CL\broll.webm" -vf "setpts=PTS/0.853,tpad=stop_mode=clone:stop_duration=2,trim=0:14.88,setpts=PTS-STARTPTS,$vfEnd" -frames:v 447 @enc "$work\seg7.mp4" 2>$null
 
 # semua segmen identik 1280x720@30fps -> concat demuxer (urutan = timeline)
 Write-Host "=== concat ==="
-$order = @("seg0","seg1","seg2a","seg2b","seg3a","seg3b","seg4a","seg4b","seg5","seg6a","seg6b","seg6c","seg7")
+$order = @("seg0","seg1","seg2a","seg2b","seg3a","seg3b","seg4a","seg4b","seg5","seg6a","seg6b","seg7")
 $concatList = ($order | ForEach-Object { "file '$work\$_.mp4'" -replace '\\','/' }) -join "`n"
 Set-Content -Path "$work\concat.txt" -Value $concatList -Encoding ascii
 & $ff -y -f concat -safe 0 -i "$work\concat.txt" -c copy "$work\video.mp4" 2>$null
@@ -69,11 +68,11 @@ $fc = @"
 [4:a]aformat=sample_rates=48000:channel_layouts=stereo,adelay=30040:all=1[v3];
 [5:a]aformat=sample_rates=48000:channel_layouts=stereo,adelay=37600:all=1[v4];
 [6:a]aformat=sample_rates=48000:channel_layouts=stereo,adelay=50760:all=1[v5];
-[7:a]aformat=sample_rates=48000:channel_layouts=stereo,adelay=69960:all=1[v6];
-[0:a]apad=whole_dur=84.90[base];
-[base][v0][v1][v2][v3][v4][v5][v6]amix=inputs=8:normalize=0:duration=longest,loudnorm=I=-14:TP=-1.5:LRA=11,afade=t=out:st=83.6:d=1.3,aformat=sample_rates=48000:channel_layouts=stereo[aout]
+[7:a]aformat=sample_rates=48000:channel_layouts=stereo,adelay=66300:all=1[v6];
+[0:a]apad=whole_dur=81.20[base];
+[base][v0][v1][v2][v3][v4][v5][v6]amix=inputs=8:normalize=0:duration=longest,loudnorm=I=-14:TP=-1.5:LRA=11,afade=t=out:st=79.9:d=1.3,aformat=sample_rates=48000:channel_layouts=stereo[aout]
 "@
-& $ff -y -f lavfi -t 84.90 -i "anullsrc=r=48000:cl=stereo" -i "$VO\scene1_hook.wav" -i "$VO\scene2_intro.wav" -i "$VO\scene3_invoice.wav" -i "$VO\scene4_whopays.wav" -i "$VO\scene5_chase.wav" -i "$VO\scene6_paid_v2.wav" -i "$VO\scene7_close.wav" -filter_complex $fc -map "[aout]" -c:a pcm_s16le "$work\mix.wav" 2>$null
+& $ff -y -f lavfi -t 81.20 -i "anullsrc=r=48000:cl=stereo" -i "$VO\scene1_hook.wav" -i "$VO\scene2_intro.wav" -i "$VO\scene3_invoice.wav" -i "$VO\scene4_whopays.wav" -i "$VO\scene5_chase.wav" -i "$VO\scene6_paid_v2.wav" -i "$VO\scene7_close.wav" -filter_complex $fc -map "[aout]" -c:a pcm_s16le "$work\mix.wav" 2>$null
 
 Write-Host "=== mux final (+ musik pelan di bawah VO) ==="
 $fc2 = "[1:a]aformat=sample_rates=48000:channel_layouts=stereo[vo];[2:a]aformat=sample_rates=48000:channel_layouts=stereo,volume=0.12[mus];[vo][mus]amix=inputs=2:normalize=0:duration=first,alimiter=limit=0.9[aout]"

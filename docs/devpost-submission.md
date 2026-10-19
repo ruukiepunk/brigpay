@@ -54,12 +54,16 @@ Video: [PASTE YOUTUBE LINK]
 - **AG Grid** — invoice command center
 - *(AI: Google Gemini with Groq fallback)*
 
+## Built 100% with OpenCode — by someone who can't code
+
+BrigPay was designed, written, tested, deployed, and documented entirely by **OpenCode** (an AI coding agent) — and so was this submission: the demo video, the editing, and the natural-sounding voiceover are all AI-generated too. The creator has **zero programming background**; the process was nothing but plain-English conversation with the agent from first idea to live deployment. If an AI agent can take a non-programmer from "I have an idea" to a working PayPal-integrated product on the internet in days, imagine what it can do for the millions of small business owners who have a great product but no technical team.
+
 ---
 
 ## Checklist saat submit (jangan lupa)
 
 - [ ] Pilih kategori: **Best Use of PayPal + AI**, **Best Use of Agentic Commerce**, **Best Use of AG Grid**, **Most Impactful**, **Best Demo Delivery** (opsional: Most Creative)
-- [ ] Upload video final `docs/vo/brigpay-final.mp4` ke **YouTube (public)** → tempel link di kolom video
-- [ ] Isi deskripsi dari file ini
+- [ ] Upload video final `docs/vo/brigpay-final.mp4` (81.2s) ke **YouTube (public)** → tempel link di kolom video
+- [ ] Isi deskripsi dari file ini — **sertakan bagian "Built 100% with OpenCode"** (user: "bilang aja aku g bisa coding sama sekali, full100% pakai OpenCode sampai video & voice-nya")
 - [ ] Repo URL: `https://github.com/ruukiepunk/brigpay`
 - [ ] Testing notes: live URL sudah jalan, tidak perlu install; untuk lokal: clone → `.env.local` (lihat `.env.example`) → `npm install && npm run dev`
