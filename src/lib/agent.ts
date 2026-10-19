@@ -216,7 +216,7 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
       );
       const month = new Date().toISOString().slice(0, 7);
       const paidThisMonth = invoices
-        .filter((i) => i.status === "PAID" && i.created_at.slice(0, 7) === month)
+        .filter((i) => ["PAID", "MARKED_AS_PAID"].includes(i.status) && i.created_at?.slice(0, 7) === month)
         .reduce((s, i) => s + Number(i.amount), 0);
       return JSON.stringify({
         outstanding_total: outstanding.toFixed(2),
